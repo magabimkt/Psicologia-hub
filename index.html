@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1a1f2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PSI·2">
+<title>PSI·2 — Hub de Estudos</title>
+
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon-192.png">
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,300&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ──────────────── TOKENS ──────────────── */
+:root {
+  --bg:          #0d1117;
+  --surface:     #161b27;
+  --surface2:    #1e2535;
+  --border:      #2a3349;
+  --border-soft: #1e2535;
+
+  --ink:         #e8eaf0;
+  --ink-soft:    #8892a4;
+  --ink-faint:   #3d4760;
+
+  /* Discipline accent colors */
+  --ai:          #7c6af7;   /* IA Aplicada — violeta */
+  --neuro:       #2dd4bf;   /* Neurociência — teal */
+  --social:      #f97316;   /* Psicologia Social — âmbar */
+  --person:      #e879a4;   /* Personalidade — rosa */
+  --proc:        #84cc16;   /* Processos Psicológicos — verde-lima */
+
+  --font-display: 'Fraunces', serif;
+  --font-body:    'Atkinson Hyperlegible', sans-serif;
+  --font-mono:    'IBM Plex Mono', monospace;
+
+  --radius:  12px;
+  --radius-lg: 20px;
+  --sidebar-w: 260px;
+  --transition: 0.22s cubic-bezier(.4,0,.2,1);
+}
+
+/* ──────────────── RESET ──────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  overflow-x: hidden;
+}
+
+/* ──────────────── SIDEBAR ──────────────── */
+.sidebar {
+  width: var(--sidebar-w);
+  min-height: 100vh;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  z-index: 100;
+  transition: transform var(--transition);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.sidebar-logo {
+  padding: 28px 24px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-logo .brand {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  line-height: 1;
+}
+.sidebar-logo .brand span { color: var(--neuro); }
+.sidebar-logo .subtitle {
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.sidebar-nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
+.nav-section-label {
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  color: var(--ink-faint);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 12px 12px 6px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+  transition: background var(--transition), color var(--transition);
+  margin-bottom: 2px;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+.nav-item:hover { background: var(--surface2); color: var(--ink); }
+.nav-item.active { background: var(--surface2); color: var(--ink); }
+.nav-item .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.nav-item[data-disc="home"] .dot { background: var(--ink-faint); }
+.nav-item[data-disc="ai"] .dot    { background: var(--ai); }
+.nav-item[data-disc="neuro"] .dot { background: var(--neuro); }
+.nav-item[data-disc="social"] .dot{ background: var(--social); }
+.nav-item[data-disc="person"] .dot{ background: var(--person); }
+.nav-item[data-disc="proc"] .dot  { background: var(--proc); }
+
+.sidebar-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+  font-family: var(--font-mono);
+}
+
+/* ──────────────── MAIN ──────────────── */
+.main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ──────────────── TOPBAR ──────────────── */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(13,17,23,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.topbar-burger {
+  display: none;
+  background: none; border: none; cursor: pointer;
+  color: var(--ink); font-size: 1.25rem; padding: 4px;
+}
+.topbar-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+.topbar-disc-badge {
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  padding: 3px 10px;
+  border-radius: 99px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ──────────────── CONTENT ──────────────── */
+.page { display: none; padding: 40px 48px; max-width: 1100px; }
+.page.active { display: block; }
+
+/* ──────────────── HOME ──────────────── */
+.home-hero {
+  padding: 56px 48px;
+}
+.home-hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 5vw, 3.8rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin-bottom: 16px;
+}
+.home-hero h1 em {
+  font-style: italic;
+  font-weight: 300;
+  color: var(--neuro);
+}
+.home-hero p {
+  color: var(--ink-soft);
+  font-size: 1.05rem;
+  line-height: 1.7;
+  max-width: 600px;
+  margin-bottom: 40px;
+}
+.disc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  padding: 0 48px 48px;
+}
+.disc-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  cursor: pointer;
+  transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.disc-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--accent);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+.disc-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+.disc-card[data-disc="ai"]     { --accent: var(--ai); }
+.disc-card[data-disc="neuro"]  { --accent: var(--neuro); }
+.disc-card[data-disc="social"] { --accent: var(--social); }
+.disc-card[data-disc="person"] { --accent: var(--person); }
+.disc-card[data-disc="proc"]   { --accent: var(--proc); }
+
+.disc-card .card-icon {
+  font-size: 2rem; margin-bottom: 12px;
+}
+.disc-card h3 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--accent);
+}
+.disc-card p {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+.disc-card .card-topics {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.topic-pill {
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  background: var(--surface2);
+  color: var(--ink-soft);
+  padding: 3px 9px;
+  border-radius: 99px;
+  letter-spacing: 0.04em;
+}
+
+/* ──────────────── DISCIPLINE PAGE ──────────────── */
+.disc-header {
+  padding: 48px 48px 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+}
+.disc-header .eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.disc-header h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  margin-bottom: 12px;
+}
+.disc-header .disc-desc {
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  max-width: 700px;
+  padding-bottom: 28px;
+}
+
+/* Tab bar */
+.tab-bar {
+  display: flex;
+  gap: 4px;
+  padding: 0 48px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  position: sticky;
+  top: 57px;
+  z-index: 40;
+}
+.tab-btn {
+  padding: 14px 20px;
+  font-size: 0.82rem;
+  font-family: var(--font-mono);
+  color: var(--ink-soft);
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color var(--transition), border-color var(--transition);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.tab-btn:hover { color: var(--ink); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* Tab content */
+.tab-panel { display: none; padding: 40px 48px; }
+.tab-panel.active { display: block; }
+
+/* ──────────────── CONTENT BLOCKS ──────────────── */
+.section-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 24px;
+  color: var(--accent);
+}
+.content-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  margin-bottom: 20px;
+}
+.content-block h4 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--ink);
+}
+.content-block p, .content-block li {
+  font-size: 0.9rem;
+  line-height: 1.8;
+  color: var(--ink-soft);
+}
+.content-block ul, .content-block ol {
+  padding-left: 20px;
+  margin-top: 8px;
+}
+.content-block li { margin-bottom: 6px; }
+.content-block strong { color: var(--ink); }
+.content-block .highlight {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-left: 3px solid var(--accent);
+  padding: 12px 16px;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  margin: 16px 0;
+  font-size: 0.88rem;
+  color: var(--ink);
+  line-height: 1.7;
+}
+
+/* ──────────────── FLASHCARDS ──────────────── */
+.flashcard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+.flashcard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 0;
+  cursor: pointer;
+  perspective: 1000px;
+  height: 200px;
+}
+.flashcard-inner {
+  position: relative;
+  width: 100%; height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(.4,0,.2,1);
+}
+.flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+.flashcard-front, .flashcard-back {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+.flashcard-front {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.flashcard-front .fc-label {
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.flashcard-front p {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--ink);
+  font-weight: 600;
+}
+.flashcard-back {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  transform: rotateY(180deg);
+}
+.flashcard-back p {
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: var(--ink-soft);
+}
+.flashcard-hint {
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  color: var(--ink-faint);
+  margin-top: 10px;
+}
+
+/* ──────────────── QUIZ ──────────────── */
+.quiz-wrapper { max-width: 680px; }
+.quiz-question {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  margin-bottom: 16px;
+}
+.quiz-question .q-num {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  margin-bottom: 10px;
+}
+.quiz-question .q-text {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  color: var(--ink);
+}
+.quiz-options { display: flex; flex-direction: column; gap: 8px; }
+.quiz-option {
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+  transition: border-color var(--transition), background var(--transition), color var(--transition);
+  text-align: left;
+}
+.quiz-option:hover:not(.disabled) { border-color: var(--accent); color: var(--ink); }
+.quiz-option.correct { border-color: #4ade80; background: rgba(74,222,128,0.1); color: #4ade80; }
+.quiz-option.wrong   { border-color: #f87171; background: rgba(248,113,113,0.1); color: #f87171; }
+.quiz-option.disabled { cursor: default; }
+.quiz-explanation {
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: var(--surface2);
+  border-radius: var(--radius);
+  font-size: 0.83rem;
+  color: var(--ink-soft);
+  line-height: 1.7;
+  display: none;
+  border-left: 3px solid var(--accent);
+}
+.quiz-explanation.show { display: block; }
+.quiz-score {
+  margin-top: 24px;
+  padding: 20px 24px;
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-radius: var(--radius-lg);
+  text-align: center;
+  display: none;
+}
+.quiz-score.show { display: block; }
+.quiz-score .score-num {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+.quiz-score p { color: var(--ink-soft); font-size: 0.9rem; margin-top: 6px; }
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  background: var(--accent);
+  color: #0d1117;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: opacity var(--transition), transform var(--transition);
+  margin-top: 16px;
+}
+.btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+
+/* ──────────────── MIND MAP SVG ──────────────── */
+.mindmap-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: auto;
+  padding: 24px;
+}
+.mindmap-container svg { min-width: 700px; width: 100%; height: auto; }
+.mm-node {
+  cursor: pointer;
+}
+.mm-node rect { transition: filter 0.2s; }
+.mm-node:hover rect { filter: brightness(1.3); }
+.mm-label {
+  font-family: 'Atkinson Hyperlegible', sans-serif;
+  font-size: 13px;
+  fill: #e8eaf0;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+.mm-label-small {
+  font-size: 11px;
+  fill: #8892a4;
+}
+.mm-edge { stroke-opacity: 0.4; }
+
+/* ──────────────── BACKDROP (mobile) ──────────────── */
+.backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 90;
+}
+
+/* ──────────────── PROGRESS BAR ──────────────── */
+.progress-bar-wrap {
+  background: var(--surface2);
+  border-radius: 99px;
+  height: 6px;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--accent);
+  transition: width 0.4s ease;
+}
+
+/* ──────────────── RESPONSIVE ──────────────── */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .backdrop.show { display: block; }
+  .main { margin-left: 0; }
+  .topbar { padding: 14px 20px; }
+  .topbar-burger { display: flex; }
+  .page { padding: 24px 20px; }
+  .disc-header { padding: 28px 20px 0; }
+  .tab-bar { padding: 0 20px; overflow-x: auto; }
+  .tab-panel { padding: 24px 20px; }
+  .disc-grid { padding: 0 20px 32px; }
+  .home-hero { padding: 32px 20px; }
+  .flashcard-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- Backdrop (mobile) -->
+<div class="backdrop" id="backdrop" onclick="closeSidebar()"></div>
+
+<!-- ─── SIDEBAR ─── -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand">PSI<span>·</span>2</div>
+    <div class="subtitle">2º Período · Psicologia</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Início</div>
+    <button class="nav-item active" data-disc="home" onclick="navigate('home')">
+      <span class="dot"></span> Visão Geral
+    </button>
+
+    <div class="nav-section-label" style="margin-top:8px">Disciplinas</div>
+    <button class="nav-item" data-disc="ai" onclick="navigate('ai')">
+      <span class="dot"></span> IA Aplicada
+    </button>
+    <button class="nav-item" data-disc="neuro" onclick="navigate('neuro')">
+      <span class="dot"></span> Neurociência &amp; Genética Comp.
+    </button>
+    <button class="nav-item" data-disc="social" onclick="navigate('social')">
+      <span class="dot"></span> Psicologia Social
+    </button>
+    <button class="nav-item" data-disc="person" onclick="navigate('person')">
+      <span class="dot"></span> Personalidade Humana
+    </button>
+    <button class="nav-item" data-disc="proc" onclick="navigate('proc')">
+      <span class="dot"></span> Processos Psicológicos
+    </button>
+  </nav>
+  <div class="sidebar-footer">Vértice · 2025.2</div>
+</aside>
+
+<!-- ─── MAIN ─── -->
+<main class="main">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <button class="topbar-burger" id="burger" onclick="toggleSidebar()">☰</button>
+    <span class="topbar-title" id="topbar-title">PSI·2 — Hub de Estudos</span>
+    <span class="topbar-disc-badge" id="topbar-badge" style="display:none"></span>
+  </div>
+
+  <!-- ── HOME ── -->
+  <div class="page active" id="page-home">
+    <div class="home-hero">
+      <h1>Psicologia,<br><em>de verdade.</em></h1>
+      <p>Material de estudo profundo para o 2º período — cinco disciplinas, do básico ao avançado. Flashcards, quizzes, mapas conceituais e conteúdo de nível universitário real.</p>
+    </div>
+    <div class="disc-grid">
+      <div class="disc-card" data-disc="ai" onclick="navigate('ai')">
+        <div class="card-icon">🤖</div>
+        <h3>Inteligência Artificial Aplicada</h3>
+        <p>ML, redes neurais, NLP e as fronteiras entre IA e mente humana.</p>
+        <div class="card-topics">
+          <span class="topic-pill">Machine Learning</span>
+          <span class="topic-pill">Redes Neurais</span>
+          <span class="topic-pill">NLP</span>
+          <span class="topic-pill">IA &amp; Psicologia</span>
+        </div>
+      </div>
+      <div class="disc-card" data-disc="neuro" onclick="navigate('neuro')">
+        <div class="card-icon">🧠</div>
+        <h3>Neurociência &amp; Genética Comportamental</h3>
+        <p>Do neurônio à cognição. Genoma, epigenética e bases neurais do comportamento.</p>
+        <div class="card-topics">
+          <span class="topic-pill">Neuroanatomia</span>
+          <span class="topic-pill">Neuroplasticidade</span>
+          <span class="topic-pill">Epigenética</span>
+          <span class="topic-pill">Memória</span>
+        </div>
+      </div>
+      <div class="disc-card" data-disc="social" onclick="navigate('social')">
+        <div class="card-icon">🌐</div>
+        <h3>Psicologia Social &amp; Dinâmicas Culturais</h3>
+        <p>Influência, grupos, identidade e a psicologia em contexto cultural.</p>
+        <div class="card-topics">
+          <span class="topic-pill">Cognição Social</span>
+          <span class="topic-pill">Preconceito</span>
+          <span class="topic-pill">Cultura</span>
+          <span class="topic-pill">Dinâmicas de Grupo</span>
+        </div>
+      </div>
+      <div class="disc-card" data-disc="person" onclick="navigate('person')">
+        <div class="card-icon">🔮</div>
+        <h3>Diversidade da Personalidade Humana</h3>
+        <p>Teorias clássicas e contemporâneas, Big Five, temperamento e caráter.</p>
+        <div class="card-topics">
+          <span class="topic-pill">Psicanálise</span>
+          <span class="topic-pill">Big Five</span>
+          <span class="topic-pill">Humanismo</span>
+          <span class="topic-pill">TCT</span>
+        </div>
+      </div>
+      <div class="disc-card" data-disc="proc" onclick="navigate('proc')">
+        <div class="card-icon">⚡</div>
+        <h3>Processos Psicológicos Contemporâneos</h3>
+        <p>Percepção, atenção, memória, linguagem e pensamento — bases cognitivas.</p>
+        <div class="card-topics">
+          <span class="topic-pill">Atenção</span>
+          <span class="topic-pill">Memória</span>
+          <span class="topic-pill">Linguagem</span>
+          <span class="topic-pill">Emoção</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       ── DISCIPLINA 1 · IA APLICADA ──
+  ══════════════════════════════════════ -->
+  <div class="page" id="page-ai" style="padding:0; --accent: var(--ai);">
+    <div class="disc-header" style="--accent: var(--ai)">
+      <div class="eyebrow">Disciplina 01</div>
+      <h2>Inteligência Artificial Aplicada</h2>
+      <p class="disc-desc">Da lógica simbólica ao aprendizado profundo. Esta disciplina conecta os fundamentos computacionais da IA às aplicações em psicologia, saúde mental, comportamento humano e tomada de decisão.</p>
+    </div>
+    <div class="tab-bar" style="--accent: var(--ai)">
+      <button class="tab-btn active" onclick="switchTab('ai','conteudo')">Conteúdo</button>
+      <button class="tab-btn" onclick="switchTab('ai','flash')">Flashcards</button>
+      <button class="tab-btn" onclick="switchTab('ai','quiz')">Quiz</button>
+      <button class="tab-btn" onclick="switchTab('ai','mapa')">Mapa</button>
+    </div>
+
+    <!-- CONTEÚDO -->
+    <div class="tab-panel active" id="ai-conteudo" style="--accent: var(--ai)">
+      <div class="section-title">O que é Inteligência Artificial?</div>
+      <div class="content-block">
+        <h4>Definição e História</h4>
+        <p>IA é o campo da ciência da computação dedicado a criar sistemas capazes de executar tarefas que, até então, exigiam inteligência humana: reconhecer padrões, tomar decisões, aprender com experiências, entender linguagem natural.</p>
+        <div class="highlight">O termo foi cunhado por <strong>John McCarthy</strong> em 1956, na Conferência de Dartmouth. Mas a ideia remonta a Alan Turing e seu <em>Teste de Turing</em> (1950): uma máquina é inteligente se um humano não consegue distingui-la de outro humano numa conversa.</div>
+        <ul>
+          <li><strong>IA Simbólica (1950–80s):</strong> sistemas baseados em regras lógicas explícitas (se X, então Y). Frágil diante de exceções.</li>
+          <li><strong>IA Conexionista (1980s–presente):</strong> redes neurais artificiais que aprendem a partir de dados, sem regras explícitas.</li>
+          <li><strong>Era do Deep Learning (2012–):</strong> redes muito profundas, GPUs potentes e grandes datasets revolucionam visão computacional e NLP.</li>
+          <li><strong>IA Generativa (2020–):</strong> modelos como GPT, DALL-E e Claude geram texto, imagens, código e som com qualidade impressionante.</li>
+        </ul>
+      </div>
+
+      <div class="content-block">
+        <h4>Machine Learning — o núcleo da IA moderna</h4>
+        <p>ML é o subconjunto da IA onde sistemas aprendem de dados sem serem explicitamente programados para cada tarefa.</p>
+        <ul>
+          <li><strong>Aprendizado Supervisionado:</strong> dados rotulados (entrada → saída esperada). Ex: diagnosticar depressão a partir de padrões de escrita.</li>
+          <li><strong>Aprendizado Não-Supervisionado:</strong> encontra padrões sem rótulos. Ex: segmentação de perfis de pacientes.</li>
+          <li><strong>Aprendizado por Reforço:</strong> agente aprende por tentativa e erro, maximizando recompensas. Inspirado em teorias behavioristas (Skinner).</li>
+        </ul>
+        <div class="highlight"><strong>Conexão psicológica:</strong> o aprendizado por reforço em IA é diretamente análogo ao condicionamento operante. A diferença: o agente de RL pode jogar milhões de partidas por hora.</div>
+      </div>
+
+      <div class="content-block">
+        <h4>Redes Neurais Artificiais e Deep Learning</h4>
+        <p>Inspiradas — vagamente — na arquitetura do cérebro. Uma rede neural artificial consiste em <strong>neurônios artificiais</strong> (nós) conectados em camadas.</p>
+        <ul>
+          <li><strong>Camada de entrada:</strong> recebe os dados brutos (pixels, palavras, sinais).</li>
+          <li><strong>Camadas ocultas:</strong> transformam e abstraem as representações progressivamente.</li>
+          <li><strong>Camada de saída:</strong> produz a resposta final (categoria, número, texto).</li>
+        </ul>
+        <p>O treinamento usa o algoritmo de <strong>backpropagation</strong>: o erro da previsão é propagado de trás para frente, ajustando os pesos sinápticos. Analogia real: plasticidade sináptica hebbiana — "neurons that fire together, wire together".</p>
+      </div>
+
+      <div class="content-block">
+        <h4>Processamento de Linguagem Natural (NLP)</h4>
+        <p>Área que permite que máquinas entendam e gerem linguagem humana. Subáreas:</p>
+        <ul>
+          <li><strong>Análise de sentimentos:</strong> detectar emoção em texto. Aplicação: triagem de saúde mental por redes sociais.</li>
+          <li><strong>Classificação de texto:</strong> detectar discurso de ódio, desinformação, risco de suicídio.</li>
+          <li><strong>Chatbots terapêuticos:</strong> Woebot, Wysa — suporte emocional baseado em TCC automatizada.</li>
+          <li><strong>Large Language Models (LLMs):</strong> GPT-4, Claude, Gemini — geração de linguagem de alta qualidade com raciocínio emergente.</li>
+        </ul>
+      </div>
+
+      <div class="content-block">
+        <h4>IA Aplicada à Psicologia e Saúde Mental</h4>
+        <ul>
+          <li><strong>Diagnóstico assistido:</strong> análise de voz, escrita e expressão facial para detectar depressão, esquizofrenia, TEPT.</li>
+          <li><strong>Análise de risco:</strong> algoritmos preditivos para prevenção de suicídio e autolesão.</li>
+          <li><strong>Personalização terapêutica:</strong> sistemas que adaptam intervenções com base no perfil do paciente.</li>
+          <li><strong>Neuroimagem + ML:</strong> classificação de padrões de fMRI para identificar transtornos.</li>
+          <li><strong>Viés algorítmico:</strong> modelos treinados em dados não representativos perpetuam desigualdades em diagnóstico.</li>
+        </ul>
+        <div class="highlight"><strong>Ética crítica:</strong> quem é responsável quando um algoritmo comete um erro diagnóstico? A IA não substitui o psicólogo — mas pode ampliar o acesso e a eficiência do cuidado.</div>
+      </div>
+
+      <div class="content-block">
+        <h4>IA e Cognição Humana — semelhanças e diferenças</h4>
+        <ul>
+          <li>LLMs são excelentes em padrões linguísticos, mas não têm <strong>consciência, intencionalidade ou embodiment</strong>.</li>
+          <li>Humanos generalizam com poucos exemplos; IA precisa de milhões.</li>
+          <li>A IA não tem <em>teoria da mente</em> genuína — simula compreensão sem "entender".</li>
+          <li><strong>Debate filosófico:</strong> o Quarto Chinês de Searle questiona se processar símbolos equivale a compreender.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- FLASHCARDS -->
+    <div class="tab-panel" id="ai-flash" style="--accent: var(--ai)">
+      <div class="section-title">Flashcards · IA Aplicada</div>
+      <div class="flashcard-grid" id="ai-flashcards"></div>
+    </div>
+
+    <!-- QUIZ -->
+    <div class="tab-panel" id="ai-quiz" style="--accent: var(--ai)">
+      <div class="section-title">Quiz · IA Aplicada</div>
+      <div class="quiz-wrapper" id="ai-quiz-container"></div>
+    </div>
+
+    <!-- MAPA -->
+    <div class="tab-panel" id="ai-mapa" style="--accent: var(--ai)">
+      <div class="section-title">Mapa Conceitual</div>
+      <div class="mindmap-container">
+        <svg viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow-ai" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#7c6af7" opacity="0.5"/>
+            </marker>
+          </defs>
+          <!-- Edges -->
+          <line x1="450" y1="110" x2="180" y2="210" stroke="#7c6af7" stroke-width="1.5" class="mm-edge" marker-end="url(#arrow-ai)"/>
+          <line x1="450" y1="110" x2="360" y2="210" stroke="#7c6af7" stroke-width="1.5" class="mm-edge" marker-end="url(#arrow-ai)"/>
+          <line x1="450" y1="110" x2="540" y2="210" stroke="#7c6af7" stroke-width="1.5" class="mm-edge" marker-end="url(#arrow-ai)"/>
+          <line x1="450" y1="110" x2="720" y2="210" stroke="#7c6af7" stroke-width="1.5" class="mm-edge" marker-end="url(#arrow-ai)"/>
+          <line x1="360" y1="250" x2="270" y2="350" stroke="#7c6af7" stroke-width="1" class="mm-edge" opacity="0.3" marker-end="url(#arrow-ai)"/>
+          <line x1="360" y1="250" x2="400" y2="350" stroke="#7c6af7" stroke-width="1" class="mm-edge" opacity="0.3" marker-end="url(#arrow-ai)"/>
+          <line x1="540" y1="250" x2="540" y2="350" stroke="#7c6af7" stroke-width="1" class="mm-edge" opacity="0.3" marker-end="url(#arrow-ai)"/>
+          <line x1="720" y1="250" x2="680" y2="350" stroke="#7c6af7" stroke-width="1" class="mm-edge" opacity="0.3" marker-end="url(#arrow-ai)"/>
+          <line x1="720" y1="250" x2="760" y2="350" stroke="#7c6af7" stroke-width="1" class="mm-edge" opacity="0.3" marker-end="url(#arrow-ai)"/>
+          <!-- Center -->
+          <g class="mm-node">
+            <rect x="330" y="60" width="240" height="50" rx="10" fill="#7c6af7"/>
+            <foreignObject x="330" y="60" width="240" height="50">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="width:240px;height:50px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:15px;font-weight:700;color:#fff;text-align:center">Inteligência Artificial</div>
+            </foreignObject>
+          </g>
+          <!-- L1 nodes -->
+          <g class="mm-node"><rect x="110" y="190" width="140" height="40" rx="8" fill="#1e2535" stroke="#7c6af7" stroke-width="1.5"/>
+            <foreignObject x="110" y="190" width="140" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="width:140px;height:40px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:12px;color:#e8eaf0;text-align:center">IA Simbólica</div></foreignObject></g>
+          <g class="mm-node"><rect x="280" y="190" width="160" height="40" rx="8" fill="#1e2535" stroke="#7c6af7" stroke-width="1.5"/>
+            <foreignObject x="280" y="190" width="160" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="width:160px;height:40px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:12px;color:#e8eaf0;text-align:center">Machine Learning</div></foreignObject></g>
+          <g class="mm-node"><rect x="460" y="190" width="160" height="40" rx="8" fill="#1e2535" stroke="#7c6af7" stroke-width="1.5"/>
+            <foreignObject x="460" y="190" width="160" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="width:160px;height:40px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:12px;color:#e8eaf0;text-align:center">Deep Learning</div></foreignObject></g>
+          <g class="mm-node"><rect x="640" y="190" width="160" height="40" rx="8" fill="#1e2535" stroke="#7c6af7" stroke-width="1.5"/>
+            <foreignObject x="640" y="190" width="160" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="width:160px;height:40px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:12px;color:#e8eaf0;text-align:center">NLP</div></foreignObject></g>
+          <!-- L2 nodes -->
+          <g class="mm-node"><rect x="200" y="340" width="130" height="36" rx="6" fill="#161b27" stroke="#7c6af7" stroke-width="1" opacity="0.8"/>
+            <foreignObject x="200" y="340" width="130" height="36"><div xmlns="http://www.w3.org/1999/xhtml" style="width:130px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:11px;color:#8892a4;text-align:center">Supervisionado</div></foreignObject></g>
+          <g class="mm-node"><rect x="340" y="340" width="120" height="36" rx="6" fill="#161b27" stroke="#7c6af7" stroke-width="1" opacity="0.8"/>
+            <foreignObject x="340" y="340" width="120" height="36"><div xmlns="http://www.w3.org/1999/xhtml" style="width:120px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:11px;color:#8892a4;text-align:center">Reforço</div></foreignObject></g>
+          <g class="mm-node"><rect x="470" y="340" width="140" height="36" rx="6" fill="#161b27" stroke="#7c6af7" stroke-width="1" opacity="0.8"/>
+            <foreignObject x="470" y="340" width="140" height="36"><div xmlns="http://www.w3.org/1999/xhtml" style="width:140px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:11px;color:#8892a4;text-align:center">Redes Neurais</div></foreignObject></g>
+          <g class="mm-node"><rect x="620" y="340" width="120" height="36" rx="6" fill="#161b27" stroke="#7c6af7" stroke-width="1" opacity="0.8"/>
+            <foreignObject x="620" y="340" width="120" height="36"><div xmlns="http://www.w3.org/1999/xhtml" style="width:120px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:11px;color:#8892a4;text-align:center">Sentimentos</div></foreignObject></g>
+          <g class="mm-node"><rect x="750" y="340" width="120" height="36" rx="6" fill="#161b27" stroke="#7c6af7" stroke-width="1" opacity="0.8"/>
+            <foreignObject x="750" y="340" width="120" height="36"><div xmlns="http://www.w3.org/1999/xhtml" style="width:120px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:11px;color:#8892a4;text-align:center">Chatbots</div></foreignObject></g>
+          <!-- Aplicação psicologia -->
+          <g class="mm-node"><rect x="300" y="440" width="300" height="40" rx="8" fill="#161b27" stroke="#7c6af760" stroke-width="1.5"/>
+            <foreignObject x="300" y="440" width="300" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="width:300px;height:40px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:12px;color:#7c6af7;text-align:center;font-weight:600">Aplicações em Psicologia &amp; Saúde Mental</div></foreignObject></g>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       ── DISCIPLINA 2 · NEUROCIÊNCIA ──
+  ══════════════════════════════════════ -->
+  <div class="page" id="page-neuro" style="padding:0; --accent: var(--neuro);">
+    <div class="disc-header" style="--accent: var(--neuro)">
+      <div class="eyebrow">Disciplina 02 · Aprofundamento</div>
+      <h2>Neurociência &amp; Genética Comportamental</h2>
+      <p class="disc-desc">Do neurônio ao comportamento humano. A disciplina mais densa do semestre: neuroanatomia funcional, neuroquímica, plasticidade, bases genéticas do comportamento e transtornos mentais do ponto de vista neurobiológico.</p>
+    </div>
+    <div class="tab-bar" style="--accent: var(--neuro)">
+      <button class="tab-btn active" onclick="switchTab('neuro','conteudo')">Conteúdo</button>
+      <button class="tab-btn" onclick="switchTab('neuro','flash')">Flashcards</button>
+      <button class="tab-btn" onclick="switchTab('neuro','quiz')">Quiz</button>
+      <button class="tab-btn" onclick="switchTab('neuro','mapa')">Mapa</button>
+    </div>
+
+    <div class="tab-panel active" id="neuro-conteudo" style="--accent: var(--neuro)">
+      <div class="section-title">Fundamentos: o Neurônio</div>
+      <div class="content-block">
+        <h4>Estrutura e Função Neuronal</h4>
+        <p>O neurônio é a unidade funcional do sistema nervoso. Não é "o" tipo de célula — existem centenas de subtipos. Mas a arquitetura básica:</p>
+        <ul>
+          <li><strong>Corpo celular (soma):</strong> contém o núcleo; integra informações recebidas.</li>
+          <li><strong>Dendritos:</strong> ramificações que recebem sinais aferentes. A árvore dendrítica de um neurônio piramidal cortical pode ter até 10.000 conexões.</li>
+          <li><strong>Axônio:</strong> condutor do potencial de ação. Pode ter até 1m de comprimento (neurônios motores).</li>
+          <li><strong>Mielina:</strong> bainha lipídica que acelera a condução saltatória. Dano → doenças desmielinizantes (EM).</li>
+          <li><strong>Botões terminais:</strong> liberam neurotransmissores na fenda sináptica.</li>
+        </ul>
+        <div class="highlight"><strong>Potencial de ação:</strong> evento tudo-ou-nada. Quando o potencial de membrana atinge ~−55 mV (limiar), canais de Na⁺ voltagem-dependentes abrem em cascata → despolarização rápida → repolarização por K⁺ → período refratário. A frequência dos disparos (não a amplitude) codifica a intensidade do estímulo.</div>
+      </div>
+
+      <div class="content-block">
+        <h4>Neurotransmissores — os mensageiros químicos</h4>
+        <ul>
+          <li><strong>Glutamato:</strong> principal excitatório do SNC. Receptores AMPA (rápidos) e NMDA (dependentes de voltagem + ligante). Crítico para memória de longa duração via LTP.</li>
+          <li><strong>GABA:</strong> principal inibitório. Ansiolíticos (benzodiazepínicos) potencializam GABA. Baixo GABA → ansiedade, convulsões.</li>
+          <li><strong>Dopamina:</strong> via mesolímbica (recompensa/vício), via mesocortical (funções executivas), via nigroestriatal (controle motor). Hipo → Parkinson; hiper mesolímbico → sintomas positivos da esquizofrenia.</li>
+          <li><strong>Serotonina:</strong> humor, sono, apetite, impulsividade. ISRSs bloqueiam recaptação → mais serotonina disponível. Déficit → depressão (mas é mais complexo do que isso).</li>
+          <li><strong>Noradrenalina:</strong> atenção, vigilância, resposta ao estresse. Locus coeruleus é a principal fonte.</li>
+          <li><strong>Acetilcolina:</strong> memória e aprendizado (hipocampo), movimento (junção neuromuscular). Degeneração colinérgica → Alzheimer.</li>
+          <li><strong>Endorfinas / Endocanabinoides:</strong> moduladores de dor, prazer e memória. Os endocanabinoides atuam retrogradamente — do pós para o pré-sináptico.</li>
+        </ul>
+      </div>
+
+      <div class="content-block">
+        <h4>Neuroanatomia Funcional</h4>
+        <p>O encéfalo tem ~86 bilhões de neurônios e ~100 trilhões de sinapses. Principais estruturas:</p>
+        <ul>
+          <li><strong>Córtex pré-frontal (CPF):</strong> planejamento, controle inibitório, tomada de decisão, regulação emocional. O mais desenvolvido em humanos; madura até ~25 anos.</li>
+          <li><strong>Hipocampo:</strong> formação e consolidação de memórias declarativas. HM (Henry Molaison) — lesão bilateral → incapacidade de formar novas memórias episódicas.</li>
+          <li><strong>Amígdala:</strong> processamento emocional, especialmente medo. Hiperatividade → ansiedade; hipoatividade bilateral → síndrome de Klüver-Bucy.</li>
+          <li><strong>Gânglios da base:</strong> controle motor, hábitos, aprendizado procedural. Núcleo accumbens = centro de recompensa.</li>
+          <li><strong>Cerebelo:</strong> precisão motora, coordenação, e — surpreendentemente — cognição temporal e linguagem.</li>
+          <li><strong>Tálamo:</strong> "porteiro" das informações sensoriais para o córtex (exceto olfato).</li>
+          <li><strong>Hipotálamo:</strong> homeostase, hormônios, comportamento sexual, ciclo circadiano. Controla a hipófise.</li>
+        </ul>
+        <div class="highlight"><strong>Lobo por lobo:</strong> Frontal → controle executivo e motor. Parietal → integração somatossensorial e espacial. Temporal → linguagem (área de Wernicke), audição, memória. Occipital → processamento visual. As áreas de associação integram múltiplas modalidades.</div>
+      </div>
+
+      <div class="content-block">
+        <h4>Plasticidade Neuronal</h4>
+        <p>O cérebro não é estático. Ele se reorganiza ao longo de toda a vida.</p>
+        <ul>
+          <li><strong>Potenciação de Longa Duração (LTP):</strong> aumento persistente na eficácia sináptica. Mecanismo fundamental da memória. Envolve receptores NMDA e inserção de AMPA.</li>
+          <li><strong>Depressão de Longa Duração (LTD):</strong> enfraquecimento sináptico. Crucial para eliminar memórias desnecessárias e refinar circuitos.</li>
+          <li><strong>Regra de Hebb:</strong> "Neurônios que disparam juntos, se conectam juntos." Base do aprendizado por associação.</li>
+          <li><strong>Neurogênese adulta:</strong> ocorre no hipocampo (giro denteado) e bulbo olfatório. O exercício aeróbico estimula BDNF e a neurogênese.</li>
+          <li><strong>Janelas críticas:</strong> períodos de máxima plasticidade para determinadas funções (linguagem, visão binocular). Após a janela, a plasticidade diminui mas não some.</li>
+        </ul>
+      </div>
+
+      <div class="content-block">
+        <h4>Genética Comportamental</h4>
+        <p>O comportamento humano é produto de uma interação complexa entre genótipo e ambiente — não é determinismo genético.</p>
+        <ul>
+          <li><strong>Herdabilidade:</strong> proporção da variância fenotípica atribuível a diferenças genéticas numa população. QI: h² ≈ 0.5–0.8. Personalidade: h² ≈ 0.4–0.6. Mas herdabilidade não é destino.</li>
+          <li><strong>Estudos de gêmeos:</strong> gêmeos idênticos (MZ) vs. fraternos (DZ). Se MZ são mais concordantes, há influência genética. Esquizofrenia: concordância MZ ≈ 48%, DZ ≈ 17%.</li>
+          <li><strong>Estudos de adoção:</strong> separam ambiente compartilhado de genética.</li>
+          <li><strong>GWAS (Genome-Wide Association Studies):</strong> varredura do genoma inteiro buscando SNPs associados a traços. Depressão tem centenas de variantes de pequeno efeito.</li>
+          <li><strong>Epigenética:</strong> modificações que alteram a expressão gênica sem mudar o DNA. Metilação do DNA e acetilação de histonas. Experiências adversas na infância deixam "marcas" epigenéticas duradouras. Crucialmente: algumas são reversíveis por intervenção.</li>
+        </ul>
+        <div class="highlight"><strong>Gene × Ambiente (G×E):</strong> o alelo curto do gene SLC6A4 (transportador de serotonina) aumenta risco de depressão — mas apenas em pessoas expostas a adversidades. Quem tem o alelo curto sem exposição ao estresse não tem risco aumentado. O ambiente ativa ou silencia predisposições genéticas.</div>
+      </div>
+
+      <div class="content-block">
+        <h4>Bases Neurobiológicas dos Transtornos Mentais</h4>
+        <ul>
+          <li><strong>Depressão:</strong> hipoatividade do CPF medial, hiperatividade da amígdala, déficit em serotonina/noradrenalina/dopamina, redução do BDNF e hipocampal. Modelo é simplificado — a realidade é muito mais heterogênea.</li>
+          <li><strong>Ansiedade / TEPT:</strong> amígdala hiperresponsiva, falha no controle do CPF, desregulação do eixo HPA (cortisol elevado cronicamente).</li>
+          <li><strong>Esquizofrenia:</strong> hiperdopaminergia mesolímbica (sintomas positivos), hipodopaminergia mesocortical (sintomas negativos/cognitivos). Redução do volume do córtex pré-frontal e hipocampo.</li>
+          <li><strong>TDAH:</strong> disfunção do CPF + circuito de recompensa. Déficits em dopamina e noradrenalina nas vias frontoestriatais.</li>
+          <li><strong>Autismo (TEA):</strong> conectividade atípica — hiperconectividade local, hipoconectividade de longa distância. Disfunção nos neurônios-espelho pode contribuir para dificuldades de cognição social.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="neuro-flash" style="--accent: var(--neuro)">
+      <div class="section-title">Flashcards · Neurociência</div>
+      <div class="flashcard-grid" id="neuro-flashcards"></div>
+    </div>
+    <div class="tab-panel" id="neuro-quiz" style="--accent: var(--neuro)">
+      <div class="section-title">Quiz · Neurociência</div>
+      <div class="quiz-wrapper" id="neuro-quiz-container"></div>
+    </div>
+    <div class="tab-panel" id="neuro-mapa" style="--accent: var(--neuro)">
+      <div class="section-title">Mapa Conceitual</div>
+      <div class="mindmap-container">
+        <svg viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow-neuro" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#2dd4bf" opacity="0.5"/>
+            </marker>
+          </defs>
+          <line x1="450" y1="100" x2="150" y2="200" stroke="#2dd4bf" stroke-width="1.5" class="mm-edge" marker-end="url(#arrow-neuro)"/>
+          <line x1="450" y1="100" x2="310" y2="200" stroke="#2dd4bf" stroke-width="1.5" class="mm-edge" marker-end="url(#arrow-neuro)"/>
+          <line x1="450" y1="100" x2="450" y2="200" stroke="#2dd4bf" stroke-width="1.5" class="mm-edge" marker-end="url(#arrow-neuro)"/>
+          <line x1="450" y1="100" x2="600" y2="200" stroke="#2dd4bf" stroke-width="1.5" class="mm-edge" marker-end="url(#arrow-neuro)"/>
+          <line x1="450" y1="100" x2="760" y2="200" stroke="#2dd4bf" stroke-width="1.5" class="mm-edge" marker-end="url(#arrow-neuro)"/>
+          <line x1="310" y1="240" x2="250" y2="340" stroke="#2dd4bf" stroke-width="1" class="mm-edge" opacity="0.3" marker-end="url(#arrow-neuro)"/>
+          <line x1="310" y1="240" x2="360" y2="340" stroke="#2dd4bf" stroke-width="1" class="mm-edge" opacity="0.3" marker-end="url(#arrow-neuro)"/>
+          <line x1="600" y1="240" x2="560" y2="340" stroke="#2dd4bf" stroke-width="1" class="mm-edge" opacity="0.3" marker-end="url(#arrow-neuro)"/>
+          <line x1="600" y1="240" x2="650" y2="340" stroke="#2dd4bf" stroke-width="1" class="mm-edge" opacity="0.3" marker-end="url(#arrow-neuro)"/>
+
+          <g class="mm-node"><rect x="300" y="55" width="300" height="50" rx="10" fill="#2dd4bf"/>
+            <foreignObject x="300" y="55" width="300" height="50"><div xmlns="http://www.w3.org/1999/xhtml" style="width:300px;height:50px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:15px;font-weight:700;color:#0d1117;text-align:center">Neurociência &amp; Genética Comp.</div></foreignObject></g>
+          <g class="mm-node"><rect x="70" y="183" width="160" height="40" rx="8" fill="#1e2535" stroke="#2dd4bf" stroke-width="1.5"/>
+            <foreignObject x="70" y="183" width="160" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="width:160px;height:40px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:12px;color:#e8eaf0;text-align:center">Neurônio &amp; Sinapse</div></foreignObject></g>
+          <g class="mm-node"><rect x="230" y="183" width="160" height="40" rx="8" fill="#1e2535" stroke="#2dd4bf" stroke-width="1.5"/>
+            <foreignObject x="230" y="183" width="160" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="width:160px;height:40px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:12px;color:#e8eaf0;text-align:center">Neurotransmissores</div></foreignObject></g>
+          <g class="mm-node"><rect x="370" y="183" width="160" height="40" rx="8" fill="#1e2535" stroke="#2dd4bf" stroke-width="1.5"/>
+            <foreignObject x="370" y="183" width="160" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="width:160px;height:40px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:12px;color:#e8eaf0;text-align:center">Neuroanatomia</div></foreignObject></g>
+          <g class="mm-node"><rect x="520" y="183" width="160" height="40" rx="8" fill="#1e2535" stroke="#2dd4bf" stroke-width="1.5"/>
+            <foreignObject x="520" y="183" width="160" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="width:160px;height:40px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:12px;color:#e8eaf0;text-align:center">Plasticidade</div></foreignObject></g>
+          <g class="mm-node"><rect x="680" y="183" width="160" height="40" rx="8" fill="#1e2535" stroke="#2dd4bf" stroke-width="1.5"/>
+            <foreignObject x="680" y="183" width="160" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="width:160px;height:40px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:12px;color:#e8eaf0;text-align:center">Genética Comp.</div></foreignObject></g>
+          <!-- L2 -->
+          <g class="mm-node"><rect x="180" y="330" width="130" height="36" rx="6" fill="#161b27" stroke="#2dd4bf40" stroke-width="1"/>
+            <foreignObject x="180" y="330" width="130" height="36"><div xmlns="http://www.w3.org/1999/xhtml" style="width:130px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:11px;color:#8892a4;text-align:center">Dopamina</div></foreignObject></g>
+          <g class="mm-node"><rect x="320" y="330" width="130" height="36" rx="6" fill="#161b27" stroke="#2dd4bf40" stroke-width="1"/>
+            <foreignObject x="320" y="330" width="130" height="36"><div xmlns="http://www.w3.org/1999/xhtml" style="width:130px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:11px;color:#8892a4;text-align:center">Serotonina</div></foreignObject></g>
+          <g class="mm-node"><rect x="490" y="330" width="120" height="36" rx="6" fill="#161b27" stroke="#2dd4bf40" stroke-width="1"/>
+            <foreignObject x="490" y="330" width="120" height="36"><div xmlns="http://www.w3.org/1999/xhtml" style="width:120px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:11px;color:#8892a4;text-align:center">LTP/LTD</div></foreignObject></g>
+          <g class="mm-node"><rect x="620" y="330" width="130" height="36" rx="6" fill="#161b27" stroke="#2dd4bf40" stroke-width="1"/>
+            <foreignObject x="620" y="330" width="130" height="36"><div xmlns="http://www.w3.org/1999/xhtml" style="width:130px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:11px;color:#8892a4;text-align:center">Epigenética</div></foreignObject></g>
+          <!-- Box transtornos -->
+          <g class="mm-node"><rect x="200" y="430" width="500" height="40" rx="8" fill="#161b27" stroke="#2dd4bf50" stroke-width="1.5"/>
+            <foreignObject x="200" y="430" width="500" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="width:500px;height:40px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:12px;color:#2dd4bf;text-align:center;font-weight:600">Transtornos Mentais: Depressão · Ansiedade · Esquizofrenia · TDAH · TEA</div></foreignObject></g>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       ── DISCIPLINA 3 · PSICOLOGIA SOCIAL ──
+  ══════════════════════════════════════ -->
+  <div class="page" id="page-social" style="padding:0; --accent: var(--social);">
+    <div class="disc-header" style="--accent: var(--social)">
+      <div class="eyebrow">Disciplina 03</div>
+      <h2>Psicologia Social &amp; Dinâmicas Culturais</h2>
+      <p class="disc-desc">Como a presença dos outros — real, imaginada ou simbólica — transforma pensamentos, sentimentos e comportamentos. Da cognição social ao impacto da cultura na psique humana.</p>
+    </div>
+    <div class="tab-bar" style="--accent: var(--social)">
+      <button class="tab-btn active" onclick="switchTab('social','conteudo')">Conteúdo</button>
+      <button class="tab-btn" onclick="switchTab('social','flash')">Flashcards</button>
+      <button class="tab-btn" onclick="switchTab('social','quiz')">Quiz</button>
+      <button class="tab-btn" onclick="switchTab('social','mapa')">Mapa</button>
+    </div>
+    <div class="tab-panel active" id="social-conteudo" style="--accent: var(--social)">
+      <div class="section-title">Fundamentos da Psicologia Social</div>
+      <div class="content-block">
+        <h4>Definição e Objeto</h4>
+        <p>Gordon Allport (1954): "Tentativa de entender e explicar como os pensamentos, sentimentos e comportamentos dos indivíduos são influenciados pela presença real, imaginada ou implícita de outros."</p>
+        <ul>
+          <li><strong>Construção histórica:</strong> experimentos clássicos de Triplett (1898), Sherif (1935), Asch (1951), Milgram (1963), Zimbardo (1971) definiram o campo.</li>
+          <li><strong>Crise de replicação (2011–):</strong> muitos clássicos não replicaram. Força o campo a repensar tamanho amostral, p-hacking, validade ecológica.</li>
+          <li><strong>Psicologia Social Crítica:</strong> abordagem latino-americana (Silvia Lane, Martín-Baró) que enfatiza contexto histórico e transformação social.</li>
+        </ul>
+      </div>
+      <div class="content-block">
+        <h4>Cognição Social</h4>
+        <ul>
+          <li><strong>Esquemas:</strong> estruturas mentais que organizam conhecimento social. Facilitam o processamento — mas geram vieses.</li>
+          <li><strong>Heurísticas:</strong> atalhos cognitivos. Disponibilidade, representatividade, ancoragem (Kahneman &amp; Tversky).</li>
+          <li><strong>Atribuição causal:</strong> como explicamos comportamentos. Erro Fundamental de Atribuição: superestimar disposição, subestimar situação.</li>
+          <li><strong>Teoria da Mente:</strong> capacidade de inferir estados mentais alheios. Base da empatia e da interação social.</li>
+        </ul>
+        <div class="highlight"><strong>Efeito Ator-Observador:</strong> ao explicar <em>nosso próprio</em> comportamento, tendemos a atribuí-lo à situação. Ao explicar o <em>alheio</em>, atribuímos à disposição. Cultura influencia: culturas coletivistas são menos propensas ao EFA.</div>
+      </div>
+      <div class="content-block">
+        <h4>Atitudes, Persuasão e Mudança de Comportamento</h4>
+        <ul>
+          <li><strong>Atitudes:</strong> avaliações relativamente duradouras (componente cognitivo + afetivo + comportamental).</li>
+          <li><strong>Dissonância Cognitiva (Festinger):</strong> desconforto gerado por crenças/comportamentos inconsistentes → motivação para resolver o conflito.</li>
+          <li><strong>Modelo Elaboração-Probabilidade (ELM):</strong> rota central (argumentos) vs. periférica (pistas heurísticas). A rota usada depende de motivação e capacidade.</li>
+          <li><strong>Conformismo (Asch):</strong> pressão do grupo pode fazer indivíduos negarem evidências dos próprios olhos.</li>
+          <li><strong>Obediência à autoridade (Milgram):</strong> 65% dos participantes aplicaram o "máximo de choque". Revela o poder da situação sobre o comportamento.</li>
+        </ul>
+      </div>
+      <div class="content-block">
+        <h4>Identidade Social, Grupos e Preconceito</h4>
+        <ul>
+          <li><strong>Teoria da Identidade Social (Tajfel &amp; Turner):</strong> pertencimento a grupos é central para o autoconceito. Favoritismo intragrupo e discriminação intergrupal emergem mesmo com grupos mínimos.</li>
+          <li><strong>Estereótipos:</strong> crenças sobre grupos. Cognitivamente eficientes, mas distorcidas. Ativados automaticamente, mas controlados conscientemente.</li>
+          <li><strong>Preconceito:</strong> atitude negativa em relação a grupo. Racismo, sexismo, homofobia.</li>
+          <li><strong>Discriminação:</strong> comportamento diferencial baseado em grupo.</li>
+          <li><strong>Hipótese do Contato (Allport):</strong> contato intergrupal em condições iguais, cooperação, apoio institucional → reduz preconceito.</li>
+        </ul>
+      </div>
+      <div class="content-block">
+        <h4>Cultura e Psique</h4>
+        <ul>
+          <li><strong>Cultura:</strong> conjunto de práticas, valores, crenças e símbolos compartilhados que orientam comportamentos. Não é apenas folclore — é o sistema de significados.</li>
+          <li><strong>Individualismo vs. Coletivismo (Hofstede):</strong> afeta cognição, emoção, self, relações interpessoais. Culturas individualistas têm self independente; coletivistas, interdependente.</li>
+          <li><strong>Variação emocional:</strong> algumas emoções são universais (Paul Ekman: 6 básicas). Mas a expressão, regulação e categorização variam culturalmente.</li>
+          <li><strong>Sincretismo e hibridização:</strong> culturas não são puras — são dinâmicas e se transformam por contato.</li>
+          <li><strong>Diversidade étnico-racial no Brasil:</strong> racismo estrutural, branquitude, perspectivas decoloniais.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="tab-panel" id="social-flash" style="--accent: var(--social)">
+      <div class="section-title">Flashcards · Psicologia Social</div>
+      <div class="flashcard-grid" id="social-flashcards"></div>
+    </div>
+    <div class="tab-panel" id="social-quiz" style="--accent: var(--social)">
+      <div class="section-title">Quiz · Psicologia Social</div>
+      <div class="quiz-wrapper" id="social-quiz-container"></div>
+    </div>
+    <div class="tab-panel" id="social-mapa" style="--accent: var(--social)">
+      <div class="section-title">Mapa Conceitual</div>
+      <div class="mindmap-container">
+        <svg viewBox="0 0 900 480" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="arrow-social" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#f97316" opacity="0.5"/></marker></defs>
+          <line x1="450" y1="100" x2="150" y2="210" stroke="#f97316" stroke-width="1.5" class="mm-edge" marker-end="url(#arrow-social)"/>
+          <line x1="450" y1="100" x2="340" y2="210" stroke="#f97316" stroke-width="1.5" class="mm-edge" marker-end="url(#arrow-social)"/>
+          <line x1="450" y1="100" x2="560" y2="210" stroke="#f97316" stroke-width="1.5" class="mm-edge" marker-end="url(#arrow-social)"/>
+          <line x1="450" y1="100" x2="760" y2="210" stroke="#f97316" stroke-width="1.5" class="mm-edge" marker-end="url(#arrow-social)"/>
+          <g class="mm-node"><rect x="290" y="55" width="320" height="50" rx="10" fill="#f97316"/>
+            <foreignObject x="290" y="55" width="320" height="50"><div xmlns="http://www.w3.org/1999/xhtml" style="width:320px;height:50px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:15px;font-weight:700;color:#fff;text-align:center">Psicologia Social</div></foreignObject></g>
+          <g class="mm-node"><rect x="60" y="193" width="170" height="40" rx="8" fill="#1e2535" stroke="#f97316" stroke-width="1.5"/>
+            <foreignObject x="60" y="193" width="170" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="width:170px;height:40px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:12px;color:#e8eaf0;text-align:center">Cognição Social</div></foreignObject></g>
+          <g class="mm-node"><rect x="240" y="193" width="190" height="40" rx="8" fill="#1e2535" stroke="#f97316" stroke-width="1.5"/>
+            <foreignObject x="240" y="193" width="190" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="width:190px;height:40px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:12px;color:#e8eaf0;text-align:center">Influência &amp; Conformidade</div></foreignObject></g>
+          <g class="mm-node"><rect x="460" y="193" width="190" height="40" rx="8" fill="#1e2535" stroke="#f97316" stroke-width="1.5"/>
+            <foreignObject x="460" y="193" width="190" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="width:190px;height:40px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:12px;color:#e8eaf0;text-align:center">Preconceito &amp; Grupos</div></foreignObject></g>
+          <g class="mm-node"><rect x="670" y="193" width="190" height="40" rx="8" fill="#1e2535" stroke="#f97316" stroke-width="1.5"/>
+            <foreignObject x="670" y="193" width="190" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="width:190px;height:40px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:12px;color:#e8eaf0;text-align:center">Cultura &amp; Identidade</div></foreignObject></g>
+          <!-- Sub-nodes -->
+          <line x1="145" y1="233" x2="100" y2="330" stroke="#f97316" stroke-width="1" class="mm-edge" opacity="0.3" marker-end="url(#arrow-social)"/>
+          <line x1="145" y1="233" x2="220" y2="330" stroke="#f97316" stroke-width="1" class="mm-edge" opacity="0.3" marker-end="url(#arrow-social)"/>
+          <g class="mm-node"><rect x="30" y="318" width="140" height="36" rx="6" fill="#161b27" stroke="#f9731640" stroke-width="1"/>
+            <foreignObject x="30" y="318" width="140" height="36"><div xmlns="http://www.w3.org/1999/xhtml" style="width:140px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:11px;color:#8892a4;text-align:center">Atribuição Causal</div></foreignObject></g>
+          <g class="mm-node"><rect x="175" y="318" width="120" height="36" rx="6" fill="#161b27" stroke="#f9731640" stroke-width="1"/>
+            <foreignObject x="175" y="318" width="120" height="36"><div xmlns="http://www.w3.org/1999/xhtml" style="width:120px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:11px;color:#8892a4;text-align:center">Heurísticas</div></foreignObject></g>
+          <g class="mm-node"><rect x="260" y="420" width="380" height="36" rx="8" fill="#161b27" stroke="#f9731640" stroke-width="1.5"/>
+            <foreignObject x="260" y="420" width="380" height="36"><div xmlns="http://www.w3.org/1999/xhtml" style="width:380px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:11px;color:#f97316;text-align:center;font-weight:600">Milgram · Asch · Tajfel · Festinger · Allport</div></foreignObject></g>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       ── DISCIPLINA 4 · PERSONALIDADE ──
+  ══════════════════════════════════════ -->
+  <div class="page" id="page-person" style="padding:0; --accent: var(--person);">
+    <div class="disc-header" style="--accent: var(--person)">
+      <div class="eyebrow">Disciplina 04</div>
+      <h2>Diversidade da Personalidade Humana</h2>
+      <p class="disc-desc">Das tipologias gregas ao Big Five. As grandes teorias da personalidade — psicodinâmica, humanista, comportamental, traços — e como aplicá-las na clínica e na vida.</p>
+    </div>
+    <div class="tab-bar" style="--accent: var(--person)">
+      <button class="tab-btn active" onclick="switchTab('person','conteudo')">Conteúdo</button>
+      <button class="tab-btn" onclick="switchTab('person','flash')">Flashcards</button>
+      <button class="tab-btn" onclick="switchTab('person','quiz')">Quiz</button>
+      <button class="tab-btn" onclick="switchTab('person','mapa')">Mapa</button>
+    </div>
+    <div class="tab-panel active" id="person-conteudo" style="--accent: var(--person)">
+      <div class="section-title">O que é Personalidade?</div>
+      <div class="content-block">
+        <h4>Definição e Debates Fundamentais</h4>
+        <p>Personalidade é o conjunto de padrões relativamente estáveis de pensamento, emoção e comportamento que distinguem um indivíduo e que persistem ao longo do tempo e das situações.</p>
+        <ul>
+          <li><strong>Pessoa vs. Situação:</strong> quanto do comportamento é determinado pela personalidade e quanto pela situação? (Debate Mischel vs. traços).</li>
+          <li><strong>Herança vs. Ambiente:</strong> temperamento (biológico, inato) vs. caráter (desenvolvido pela experiência).</li>
+          <li><strong>Estrutura vs. Processo:</strong> o que existe vs. como funciona.</li>
+        </ul>
+      </div>
+      <div class="content-block">
+        <h4>Abordagem Psicodinâmica (Freud e pós-freudianos)</h4>
+        <ul>
+          <li><strong>Estrutura da mente:</strong> Id (pulsões, prazer), Ego (realidade, mediador), Superego (moral, introjeção das normas).</li>
+          <li><strong>Inconsciente:</strong> conteúdo reprimido que continua influenciando o comportamento de forma indireta.</li>
+          <li><strong>Mecanismos de defesa:</strong> repressão, projeção, racionalização, sublimação, formação reativa, regressão. Cada um tem função adaptativa e patológica.</li>
+          <li><strong>Jung:</strong> inconsciente coletivo, arquétipos (Sombra, Anima/Animus, Self, Persona), introversão/extroversão.</li>
+          <li><strong>Adler:</strong> sentimento de inferioridade como motor do desenvolvimento; busca por superioridade e pertencimento.</li>
+          <li><strong>Erikson:</strong> desenvolvimento psicossocial em 8 estágios ao longo da vida; crise como oportunidade de crescimento.</li>
+        </ul>
+      </div>
+      <div class="content-block">
+        <h4>Abordagem Humanista</h4>
+        <ul>
+          <li><strong>Maslow:</strong> hierarquia de necessidades → autorrealização. Motivação progride da base (fisiológico/segurança) ao topo (estética/autorrealização).</li>
+          <li><strong>Carl Rogers:</strong> tendência atualizante como força motivacional. Self ideal vs. self real → congruência é saúde. Condições de valor → distorção do self.</li>
+          <li><strong>Ênfase:</strong> subjetividade, livre-arbítrio, potencial humano, experiência fenomenológica.</li>
+        </ul>
+        <div class="highlight"><strong>Terapia centrada no cliente:</strong> empatia, congruência e aceitação incondicional como condições necessárias e suficientes para a mudança terapêutica (Rogers, 1957).</div>
+      </div>
+      <div class="content-block">
+        <h4>Teoria dos Traços e Big Five</h4>
+        <ul>
+          <li><strong>Allport:</strong> traços cardinais, centrais e secundários. Propôs lista de 4.000 adjetivos de personalidade.</li>
+          <li><strong>Cattell:</strong> análise fatorial → 16 fatores de personalidade (16PF).</li>
+          <li><strong>Eysenck:</strong> modelo PEN: Psicoticismo, Extroversão, Neuroticismo. Base biológica clara.</li>
+          <li><strong>Big Five (OCEAN):</strong> Openness (abertura), Conscientiousness (conscienciosidade), Extraversion (extroversão), Agreeableness (amabilidade), Neuroticism (neuroticismo). Replicado transculturalmente. Base hereditária moderada (~50%).</li>
+        </ul>
+      </div>
+      <div class="content-block">
+        <h4>Abordagem Comportamental e Sociocognitiva</h4>
+        <ul>
+          <li><strong>Behaviorismo:</strong> personalidade é conjunto de hábitos aprendidos. Skinner: reforço molda comportamento estável.</li>
+          <li><strong>Bandura:</strong> aprendizagem social + autoeficácia. O que cremos ser capazes de fazer molda o que tentamos.</li>
+          <li><strong>Rotter:</strong> locus de controle interno vs. externo. Pessoas com LC interno atribuem resultados às próprias ações.</li>
+          <li><strong>Mischel:</strong> variáveis cognitivas-afetivas situacionais mediam a relação entre traços e comportamento.</li>
+        </ul>
+      </div>
+      <div class="content-block">
+        <h4>Personalidade e Transtornos</h4>
+        <ul>
+          <li><strong>Transtornos de personalidade (DSM-5):</strong> padrões inflexíveis e persistentes que causam sofrimento/prejuízo. Clusters A (excêntrico), B (dramático), C (ansioso).</li>
+          <li><strong>Cluster B em destaque:</strong> Borderline (instabilidade afetiva, medo abandono), Narcisista (grandiosidade, empatia prejudicada), Antissocial (violação de normas), Histriônico.</li>
+          <li><strong>Modelo alternativo (DSM-5):</strong> dimensionalidade → personalidade como continuum, não categoria.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="tab-panel" id="person-flash" style="--accent: var(--person)">
+      <div class="section-title">Flashcards · Personalidade</div>
+      <div class="flashcard-grid" id="person-flashcards"></div>
+    </div>
+    <div class="tab-panel" id="person-quiz" style="--accent: var(--person)">
+      <div class="section-title">Quiz · Personalidade</div>
+      <div class="quiz-wrapper" id="person-quiz-container"></div>
+    </div>
+    <div class="tab-panel" id="person-mapa" style="--accent: var(--person)">
+      <div class="section-title">Mapa Conceitual</div>
+      <div class="mindmap-container">
+        <svg viewBox="0 0 900 460" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="arrow-person" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#e879a4" opacity="0.5"/></marker></defs>
+          <line x1="450" y1="95" x2="150" y2="200" stroke="#e879a4" stroke-width="1.5" class="mm-edge" marker-end="url(#arrow-person)"/>
+          <line x1="450" y1="95" x2="330" y2="200" stroke="#e879a4" stroke-width="1.5" class="mm-edge" marker-end="url(#arrow-person)"/>
+          <line x1="450" y1="95" x2="570" y2="200" stroke="#e879a4" stroke-width="1.5" class="mm-edge" marker-end="url(#arrow-person)"/>
+          <line x1="450" y1="95" x2="760" y2="200" stroke="#e879a4" stroke-width="1.5" class="mm-edge" marker-end="url(#arrow-person)"/>
+          <g class="mm-node"><rect x="300" y="55" width="300" height="45" rx="10" fill="#e879a4"/>
+            <foreignObject x="300" y="55" width="300" height="45"><div xmlns="http://www.w3.org/1999/xhtml" style="width:300px;height:45px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:15px;font-weight:700;color:#fff;text-align:center">Personalidade Humana</div></foreignObject></g>
+          <g class="mm-node"><rect x="60" y="183" width="170" height="40" rx="8" fill="#1e2535" stroke="#e879a4" stroke-width="1.5"/>
+            <foreignObject x="60" y="183" width="170" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="width:170px;height:40px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:12px;color:#e8eaf0;text-align:center">Psicodinâmica</div></foreignObject></g>
+          <g class="mm-node"><rect x="250" y="183" width="160" height="40" rx="8" fill="#1e2535" stroke="#e879a4" stroke-width="1.5"/>
+            <foreignObject x="250" y="183" width="160" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="width:160px;height:40px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:12px;color:#e8eaf0;text-align:center">Humanista</div></foreignObject></g>
+          <g class="mm-node"><rect x="430" y="183" width="230" height="40" rx="8" fill="#1e2535" stroke="#e879a4" stroke-width="1.5"/>
+            <foreignObject x="430" y="183" width="230" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="width:230px;height:40px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:12px;color:#e8eaf0;text-align:center">Teoria dos Traços / Big Five</div></foreignObject></g>
+          <g class="mm-node"><rect x="680" y="183" width="190" height="40" rx="8" fill="#1e2535" stroke="#e879a4" stroke-width="1.5"/>
+            <foreignObject x="680" y="183" width="190" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="width:190px;height:40px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:12px;color:#e8eaf0;text-align:center">Sociocognitiva</div></foreignObject></g>
+          <!-- Sub-nodes psicodinâmica -->
+          <line x1="145" y1="223" x2="90" y2="320" stroke="#e879a4" stroke-width="1" class="mm-edge" opacity="0.3" marker-end="url(#arrow-person)"/>
+          <line x1="145" y1="223" x2="200" y2="320" stroke="#e879a4" stroke-width="1" class="mm-edge" opacity="0.3" marker-end="url(#arrow-person)"/>
+          <g class="mm-node"><rect x="30" y="308" width="120" height="36" rx="6" fill="#161b27" stroke="#e879a440" stroke-width="1"/>
+            <foreignObject x="30" y="308" width="120" height="36"><div xmlns="http://www.w3.org/1999/xhtml" style="width:120px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:11px;color:#8892a4;text-align:center">Freud · Jung</div></foreignObject></g>
+          <g class="mm-node"><rect x="160" y="308" width="130" height="36" rx="6" fill="#161b27" stroke="#e879a440" stroke-width="1"/>
+            <foreignObject x="160" y="308" width="130" height="36"><div xmlns="http://www.w3.org/1999/xhtml" style="width:130px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:11px;color:#8892a4;text-align:center">Adler · Erikson</div></foreignObject></g>
+          <!-- Big Five sub -->
+          <line x1="545" y1="223" x2="480" y2="320" stroke="#e879a4" stroke-width="1" class="mm-edge" opacity="0.3" marker-end="url(#arrow-person)"/>
+          <line x1="545" y1="223" x2="610" y2="320" stroke="#e879a4" stroke-width="1" class="mm-edge" opacity="0.3" marker-end="url(#arrow-person)"/>
+          <g class="mm-node"><rect x="400" y="308" width="160" height="36" rx="6" fill="#161b27" stroke="#e879a440" stroke-width="1"/>
+            <foreignObject x="400" y="308" width="160" height="36"><div xmlns="http://www.w3.org/1999/xhtml" style="width:160px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:11px;color:#8892a4;text-align:center">OCEAN</div></foreignObject></g>
+          <g class="mm-node"><rect x="570" y="308" width="160" height="36" rx="6" fill="#161b27" stroke="#e879a440" stroke-width="1"/>
+            <foreignObject x="570" y="308" width="160" height="36"><div xmlns="http://www.w3.org/1999/xhtml" style="width:160px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:11px;color:#8892a4;text-align:center">Eysenck · Cattell</div></foreignObject></g>
+          <g class="mm-node"><rect x="250" y="400" width="400" height="36" rx="8" fill="#161b27" stroke="#e879a440" stroke-width="1.5"/>
+            <foreignObject x="250" y="400" width="400" height="36"><div xmlns="http://www.w3.org/1999/xhtml" style="width:400px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:11px;color:#e879a4;text-align:center;font-weight:600">Transtornos de Personalidade · DSM-5 Clusters A, B, C</div></foreignObject></g>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       ── DISCIPLINA 5 · PROCESSOS PSICOLÓGICOS ──
+  ══════════════════════════════════════ -->
+  <div class="page" id="page-proc" style="padding:0; --accent: var(--proc);">
+    <div class="disc-header" style="--accent: var(--proc)">
+      <div class="eyebrow">Disciplina 05</div>
+      <h2>Processos Psicológicos Contemporâneos</h2>
+      <p class="disc-desc">Os processos que constroem a experiência subjetiva: percepção, atenção, memória, linguagem, pensamento, aprendizagem e emoção — na perspectiva cognitiva contemporânea e com bases neurociêntíficas.</p>
+    </div>
+    <div class="tab-bar" style="--accent: var(--proc)">
+      <button class="tab-btn active" onclick="switchTab('proc','conteudo')">Conteúdo</button>
+      <button class="tab-btn" onclick="switchTab('proc','flash')">Flashcards</button>
+      <button class="tab-btn" onclick="switchTab('proc','quiz')">Quiz</button>
+      <button class="tab-btn" onclick="switchTab('proc','mapa')">Mapa</button>
+    </div>
+    <div class="tab-panel active" id="proc-conteudo" style="--accent: var(--proc)">
+      <div class="section-title">Percepção e Atenção</div>
+      <div class="content-block">
+        <h4>Percepção: construindo a realidade</h4>
+        <p>A percepção não é uma cópia passiva do mundo. É uma construção ativa do cérebro, guiada por expectativas, memórias e contexto.</p>
+        <ul>
+          <li><strong>Processamento bottom-up:</strong> do estímulo físico para a representação mental. Guiado pelos dados sensoriais.</li>
+          <li><strong>Processamento top-down:</strong> expectativas e conhecimento prévio modulam o que percebemos. Ilusões ópticas demonstram isso.</li>
+          <li><strong>Gestalt:</strong> figura-fundo, proximidade, similaridade, fechamento, continuidade. O todo é mais do que a soma das partes.</li>
+          <li><strong>Percepção social:</strong> aplicamos os mesmos princípios ao perceber pessoas — com vieses adicionais.</li>
+        </ul>
+      </div>
+      <div class="content-block">
+        <h4>Atenção: o gargalo do processamento</h4>
+        <ul>
+          <li><strong>Atenção seletiva:</strong> filtra o que entra na consciência. Paradoxo do coquetel: ouvimos nosso nome em ruído de fundo.</li>
+          <li><strong>Efeito Stroop:</strong> conflito entre processamento automático (ler) e controlado (nomear cor) → demonstra dois sistemas de processamento.</li>
+          <li><strong>Atenção sustentada:</strong> vigilância ao longo do tempo. Decai rapidamente. Crítica para TDAH.</li>
+          <li><strong>Atenção dividida:</strong> multitasking é um mito — o que fazemos é task-switching rápido.</li>
+          <li><strong>Redes de atenção (Posner):</strong> alerta, orientação e controle executivo — sistemas parcialmente independentes.</li>
+        </ul>
+      </div>
+      <div class="content-block">
+        <h4>Memória: sistemas e processos</h4>
+        <ul>
+          <li><strong>Modelo modal (Atkinson &amp; Shiffrin):</strong> memória sensorial → MCP → MLP. Simples mas influente.</li>
+          <li><strong>Memória de trabalho (Baddeley):</strong> executivo central + alça fonológica + esboço visuoespacial + buffer episódico. Capacidade: ~4 chunks. A base do pensamento consciente.</li>
+          <li><strong>Memória de longa duração:</strong>
+            <ul>
+              <li>Declarativa (explícita): episódica (eventos pessoais) + semântica (fatos).</li>
+              <li>Não-declarativa (implícita): procedural, condicionamento, priming.</li>
+            </ul>
+          </li>
+          <li><strong>Codificação:</strong> elaboração semântica &gt; repetição superficial. Efeito de geração, espaçamento, intercalação.</li>
+          <li><strong>Consolidação:</strong> processo de estabilização, principalmente durante o sono (reativação hipocampal).</li>
+          <li><strong>Esquecimento:</strong> decaimento, interferência (proativa/retroativa), falha de recuperação, memórias falsas.</li>
+        </ul>
+        <div class="highlight"><strong>Memória não é uma gravação:</strong> cada vez que lembramos, a memória é reconstituída — e pode ser distorcida. Elizabeth Loftus demonstrou que memórias falsas podem ser implantadas com sugestão verbal. Isso tem implicações enormes para o testemunho ocular no sistema judicial.</div>
+      </div>
+      <div class="content-block">
+        <h4>Linguagem e Pensamento</h4>
+        <ul>
+          <li><strong>Linguagem:</strong> fonemas → morfemas → sintaxe → semântica → pragmática. Sistema hierárquico de incrível produtividade.</li>
+          <li><strong>Áreas de Broca (produção) e Wernicke (compreensão):</strong> lesões produzem afasias específicas. A linguagem emerge de uma rede distribuída, não apenas dessas áreas.</li>
+          <li><strong>Hipótese de Sapir-Whorf:</strong> a linguagem que falamos influencia como pensamos? Versão forte (determinismo) rejeitada; versão fraca (relativismo linguístico) tem evidência parcial.</li>
+          <li><strong>Pensamento:</strong> representações mentais + operações sobre elas. Conceitos, categorias, raciocínio, julgamento.</li>
+          <li><strong>Sistema 1 e 2 (Kahneman):</strong> Sistema 1 = rápido, automático, intuitivo. Sistema 2 = lento, deliberativo, esforçoso. A maioria das decisões usa o Sistema 1.</li>
+        </ul>
+      </div>
+      <div class="content-block">
+        <h4>Emoção e Motivação</h4>
+        <ul>
+          <li><strong>O que é uma emoção?</strong> Experiência subjetiva + resposta fisiológica + comportamento expressivo + tendência de ação. Componentes inseparáveis.</li>
+          <li><strong>Teorias:</strong> James-Lange (emoção segue sensação física) → Cannon-Bard (simultâneos) → Schachter-Singer (ativação + atribuição cognitiva) → Appraisal theories (avaliação cognitiva).</li>
+          <li><strong>Regulação emocional:</strong> reavaliação cognitiva (mais eficaz) vs. supressão (custa recursos, efeito rebote).</li>
+          <li><strong>Motivação:</strong> instintos → pulsões → necessidades (Maslow) → expectativa-valor → autodeterminação (Ryan &amp; Deci: autonomia, competência, pertencimento).</li>
+          <li><strong>Flow (Csikszentmihalyi):</strong> estado de engajamento total quando desafio ≈ habilidade. Alta concentração e satisfação intrínseca.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="tab-panel" id="proc-flash" style="--accent: var(--proc)">
+      <div class="section-title">Flashcards · Processos Psicológicos</div>
+      <div class="flashcard-grid" id="proc-flashcards"></div>
+    </div>
+    <div class="tab-panel" id="proc-quiz" style="--accent: var(--proc)">
+      <div class="section-title">Quiz · Processos Psicológicos</div>
+      <div class="quiz-wrapper" id="proc-quiz-container"></div>
+    </div>
+    <div class="tab-panel" id="proc-mapa" style="--accent: var(--proc)">
+      <div class="section-title">Mapa Conceitual</div>
+      <div class="mindmap-container">
+        <svg viewBox="0 0 900 480" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="arrow-proc" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#84cc16" opacity="0.5"/></marker></defs>
+          <line x1="450" y1="95" x2="120" y2="210" stroke="#84cc16" stroke-width="1.5" class="mm-edge" marker-end="url(#arrow-proc)"/>
+          <line x1="450" y1="95" x2="300" y2="210" stroke="#84cc16" stroke-width="1.5" class="mm-edge" marker-end="url(#arrow-proc)"/>
+          <line x1="450" y1="95" x2="455" y2="210" stroke="#84cc16" stroke-width="1.5" class="mm-edge" marker-end="url(#arrow-proc)"/>
+          <line x1="450" y1="95" x2="620" y2="210" stroke="#84cc16" stroke-width="1.5" class="mm-edge" marker-end="url(#arrow-proc)"/>
+          <line x1="450" y1="95" x2="790" y2="210" stroke="#84cc16" stroke-width="1.5" class="mm-edge" marker-end="url(#arrow-proc)"/>
+          <g class="mm-node"><rect x="290" y="55" width="320" height="45" rx="10" fill="#84cc16"/>
+            <foreignObject x="290" y="55" width="320" height="45"><div xmlns="http://www.w3.org/1999/xhtml" style="width:320px;height:45px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:15px;font-weight:700;color:#0d1117;text-align:center">Processos Psicológicos</div></foreignObject></g>
+          <g class="mm-node"><rect x="30" y="193" width="170" height="40" rx="8" fill="#1e2535" stroke="#84cc16" stroke-width="1.5"/>
+            <foreignObject x="30" y="193" width="170" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="width:170px;height:40px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:12px;color:#e8eaf0;text-align:center">Percepção</div></foreignObject></g>
+          <g class="mm-node"><rect x="210" y="193" width="170" height="40" rx="8" fill="#1e2535" stroke="#84cc16" stroke-width="1.5"/>
+            <foreignObject x="210" y="193" width="170" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="width:170px;height:40px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:12px;color:#e8eaf0;text-align:center">Atenção</div></foreignObject></g>
+          <g class="mm-node"><rect x="370" y="193" width="170" height="40" rx="8" fill="#1e2535" stroke="#84cc16" stroke-width="1.5"/>
+            <foreignObject x="370" y="193" width="170" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="width:170px;height:40px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:12px;color:#e8eaf0;text-align:center">Memória</div></foreignObject></g>
+          <g class="mm-node"><rect x="540" y="193" width="160" height="40" rx="8" fill="#1e2535" stroke="#84cc16" stroke-width="1.5"/>
+            <foreignObject x="540" y="193" width="160" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="width:160px;height:40px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:12px;color:#e8eaf0;text-align:center">Linguagem</div></foreignObject></g>
+          <g class="mm-node"><rect x="710" y="193" width="160" height="40" rx="8" fill="#1e2535" stroke="#84cc16" stroke-width="1.5"/>
+            <foreignObject x="710" y="193" width="160" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="width:160px;height:40px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:12px;color:#e8eaf0;text-align:center">Emoção</div></foreignObject></g>
+          <!-- Sub nodes -->
+          <line x1="455" y1="233" x2="390" y2="330" stroke="#84cc16" stroke-width="1" class="mm-edge" opacity="0.3" marker-end="url(#arrow-proc)"/>
+          <line x1="455" y1="233" x2="520" y2="330" stroke="#84cc16" stroke-width="1" class="mm-edge" opacity="0.3" marker-end="url(#arrow-proc)"/>
+          <g class="mm-node"><rect x="310" y="318" width="160" height="36" rx="6" fill="#161b27" stroke="#84cc1640" stroke-width="1"/>
+            <foreignObject x="310" y="318" width="160" height="36"><div xmlns="http://www.w3.org/1999/xhtml" style="width:160px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:11px;color:#8892a4;text-align:center">MCP / MLP</div></foreignObject></g>
+          <g class="mm-node"><rect x="480" y="318" width="160" height="36" rx="6" fill="#161b27" stroke="#84cc1640" stroke-width="1"/>
+            <foreignObject x="480" y="318" width="160" height="36"><div xmlns="http://www.w3.org/1999/xhtml" style="width:160px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:11px;color:#8892a4;text-align:center">Consolidação / Sono</div></foreignObject></g>
+          <g class="mm-node"><rect x="240" y="410" width="420" height="36" rx="8" fill="#161b27" stroke="#84cc1640" stroke-width="1.5"/>
+            <foreignObject x="240" y="410" width="420" height="36"><div xmlns="http://www.w3.org/1999/xhtml" style="width:420px;height:36px;display:flex;align-items:center;justify-content:center;font-family:'Atkinson Hyperlegible',sans-serif;font-size:11px;color:#84cc16;text-align:center;font-weight:600">Kahneman Sistema 1&amp;2 · Baddeley · Flow · Regulação Emocional</div></foreignObject></g>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ─── DATA ───
+const DATA = {
+  ai: {
+    flash: [
+      { q: "O que é o Teste de Turing?", a: "Proposto por Alan Turing em 1950. Uma máquina passa no teste se um humano não consegue distingui-la de outro humano numa conversa de texto." },
+      { q: "Qual a diferença entre IA Simbólica e Conexionista?", a: "Simbólica usa regras lógicas explícitas (se/então). Conexionista usa redes neurais que aprendem padrões a partir de dados, sem regras pré-definidas." },
+      { q: "O que é backpropagation?", a: "Algoritmo de treinamento de redes neurais: o erro da saída é propagado de trás para frente pela rede, ajustando os pesos sinápticos para minimizar esse erro." },
+      { q: "O que é aprendizado por reforço?", a: "Paradigma onde um agente aprende por tentativa e erro, recebendo recompensas por ações que aproximam do objetivo. Inspirado no condicionamento operante de Skinner." },
+      { q: "O que é viés algorítmico?", a: "Quando um modelo de IA reproduz ou amplifica preconceitos presentes nos dados de treinamento, prejudicando grupos sub-representados ou marginalizados." },
+      { q: "Qual o Quarto Chinês de Searle?", a: "Experimento mental que questiona se processar símbolos equivale a compreender significado. Uma pessoa seguindo regras em chinês não 'entende' chinês — e a IA seria análoga." },
+    ],
+    quiz: [
+      { q: "Qual paradigma de ML é mais análogo ao condicionamento operante de Skinner?", opts: ["Supervisionado","Não-supervisionado","Por reforço","Transfer learning"], correct: 2, exp: "O aprendizado por reforço usa recompensas e punições para moldar o comportamento do agente, assim como o condicionamento operante." },
+      { q: "O que são LLMs (Large Language Models)?", opts: ["Algoritmos de clustering","Modelos de linguagem de grande escala treinados em texto","Sistemas especialistas baseados em regras","Redes de neurônios biológicos simulados"], correct: 1, exp: "LLMs como GPT e Claude são modelos treinados em enormes corpora textuais que geram linguagem fluente e realizam raciocínio emergente." },
+      { q: "Qual área da IA permite analisar emoções em texto para triagem de saúde mental?", opts: ["Computer Vision","Análise de sentimentos (NLP)","Aprendizado não-supervisionado","Sistemas especialistas"], correct: 1, exp: "A análise de sentimentos, subárea do NLP, identifica valência emocional em texto — usada para triagem de risco em redes sociais e prontuários." },
+      { q: "No deep learning, o que a camada oculta realiza?", opts: ["Armazena os pesos finais","Recebe apenas os dados brutos","Transforma e abstrai representações progressivamente","Calcula a função de perda final"], correct: 2, exp: "As camadas ocultas transformam as entradas em representações cada vez mais abstratas, permitindo que a rede aprenda características complexas." },
+    ]
+  },
+  neuro: {
+    flash: [
+      { q: "O que é um potencial de ação?", a: "Evento eletroquímico tudo-ou-nada: quando o potencial de membrana atinge o limiar (~−55 mV), canais de Na⁺ abrem em cascata → despolarização rápida → repolarização por K⁺." },
+      { q: "Qual a função do hipocampo?", a: "Formação e consolidação de memórias declarativas (episódicas e semânticas). Lesão bilateral (como em H.M.) impede a formação de novas memórias explícitas." },
+      { q: "O que é LTP?", a: "Potenciação de Longa Duração: aumento persistente da eficácia sináptica após estimulação repetida. Mecanismo celular fundamental do aprendizado e memória. Envolve receptores NMDA e inserção de AMPA." },
+      { q: "Qual a diferença entre dopamina e serotonina?", a: "Dopamina: recompensa, motivação, controle motor. Serotonina: humor, sono, apetite, impulsividade. Ambas são monoaminas moduladoras, com diferentes circuitos e funções." },
+      { q: "O que é epigenética?", a: "Modificações que alteram a expressão gênica sem alterar a sequência do DNA (metilação, acetilação de histonas). Experiências de vida, incluindo trauma, podem deixar marcas epigenéticas — algumas reversíveis." },
+      { q: "O que é herdabilidade?", a: "Proporção da variância fenotípica numa população que pode ser atribuída a diferenças genéticas. Não é destino — é uma estatística populacional que muda com o ambiente." },
+      { q: "Qual a função do córtex pré-frontal?", a: "Planejamento, tomada de decisão, controle inibitório, regulação emocional e memória de trabalho. Matura completamente por volta dos 25 anos — o que explica comportamentos impulsivos na adolescência." },
+      { q: "Como o exercício físico afeta o cérebro?", a: "Estimula a produção de BDNF (fator neurotrófico), aumenta a neurogênese no hipocampo, melhora memória, atenção e humor. Efeito antidepressivo comprovado." },
+    ],
+    quiz: [
+      { q: "Qual receptor NMDA precisa tanto de ligante quanto de voltagem para se abrir?", opts: ["AMPA","GABA-A","NMDA","Muscarínico"], correct: 2, exp: "O receptor NMDA tem duplo requisito: ligação de glutamato E despolarização para remover o bloco de Mg²⁺. Isso o torna um detector de coincidência — essencial para LTP." },
+      { q: "A hiperatividade da amígdala está associada principalmente a:", opts: ["Depressão unipolar","Ansiedade e resposta ao medo","Déficit de memória procedural","Doença de Parkinson"], correct: 1, exp: "A amígdala processa estímulos ameaçadores. Hiperatividade → hipervigilância, ansiedade, TEPT. O CPF medial normalmente a regula — disfunção nessa conexão é central nos transtornos ansiosos." },
+      { q: "O que os estudos de gêmeos idênticos revelam sobre a esquizofrenia?", opts: ["Concordância de 100%, provando causa puramente genética","Concordância de ~48%, indicando contribuição genética significativa mas não determinante","Concordância zero, indicando causa puramente ambiental","Concordância de 17%, igual a gêmeos fraternos"], correct: 1, exp: "Concordância de ~48% em MZ vs ~17% em DZ indica forte componente genético, mas o fato de não ser 100% confirma que fatores ambientais são essenciais." },
+      { q: "A interação Gene x Ambiente (G×E) refere-se a:", opts: ["A substituição do gene pelo ambiente","A modificação do DNA por fatores ambientais","Como o ambiente ativa ou silencia predisposições genéticas","O mesmo que epigenética"], correct: 2, exp: "G×E descreve como o efeito de um genótipo no fenótipo depende do ambiente. Ex.: variante do SLC6A4 aumenta risco de depressão APENAS com exposição a adversidades." },
+      { q: "Qual neurotransmissor é o principal excitatório do SNC?", opts: ["GABA","Serotonina","Glutamato","Noradrenalina"], correct: 2, exp: "Glutamato é o principal neurotransmissor excitatório, com ação via receptores AMPA, NMDA e cainato. GABA é o principal inibitório." },
+    ]
+  },
+  social: {
+    flash: [
+      { q: "O que é o Erro Fundamental de Atribuição?", a: "Tendência a superestimar disposições pessoais e subestimar influências situacionais ao explicar comportamentos alheios. Ex: 'ele é preguiçoso' em vez de 'ele estava sobrecarregado'." },
+      { q: "O que Milgram descobriu nos seus experimentos?", a: "65% dos participantes aplicaram o nível máximo de 'choque' quando instruídos por uma figura de autoridade. Revelou o poder assustador da situação sobre o comportamento moral." },
+      { q: "O que é dissonância cognitiva?", a: "Estado de desconforto psicológico causado por crenças, atitudes ou comportamentos inconsistentes entre si. A motivação para reduzir esse desconforto gera mudança de atitude (Festinger, 1957)." },
+      { q: "O que é a Teoria da Identidade Social?", a: "Tajfel & Turner: pertencer a grupos sociais é central para o autoconceito. Promovemos nosso grupo (ingroup) e depreciamos outros (outgroup) para manter uma identidade social positiva." },
+      { q: "O que são heurísticas cognitivas?", a: "Atalhos mentais que facilitam julgamentos rápidos. Disponibilidade (facilidade de lembrar), representatividade (semelhança com protótipo), ancoragem (ajuste a partir de valor inicial)." },
+      { q: "O que é a hipótese do contato de Allport?", a: "Contato intergrupal reduz preconceito quando há: status igual, objetivos comuns, cooperação e apoio institucional. É a base de muitas intervenções de inclusão." },
+    ],
+    quiz: [
+      { q: "No experimento de Asch, por que participantes concordavam com respostas obviamente erradas do grupo?", opts: ["Déficit visual","Pressão normativa — medo de rejeição social","Desorientação cognitiva genuína","Instruções ambíguas"], correct: 1, exp: "A maioria sabia que o grupo estava errado mas conformava-se por pressão normativa (querer ser aceito). Uma minoria conformava por influência informacional (acreditava que poderia estar errado)." },
+      { q: "Qual conceito descreve a tendência de grupos mínimos a favorecê-los sobre outros?", opts: ["Efeito Pigmalião","Favoritismo intragrupo","Dissonância cognitiva","Hipótese do contato"], correct: 1, exp: "Tajfel demonstrou que mesmo grupos criados arbitrariamente (por cor de imagem preferida) exibem favoritismo intragrupo — revelando a centralidade da identidade social." },
+      { q: "O modelo ELM (Elaboration Likelihood Model) propõe que a persuasão via rota central ocorre quando:", opts: ["O receptor tem pouca motivação","O argumento é emocional e vívido","O receptor tem alta motivação e capacidade de processar","A fonte é muito atraente"], correct: 2, exp: "A rota central envolve processamento profundo dos argumentos — ocorre quando há motivação e capacidade cognitiva disponível. Gera atitudes mais duradouras e resistentes." },
+      { q: "A cultura coletivista, segundo Hofstede, caracteriza-se por:", opts: ["Self independente, prioridade individual","Self interdependente, prioridade ao grupo","Alta tolerância à incerteza","Orientação a curto prazo"], correct: 1, exp: "Culturas coletivistas (comum no Leste Asiático, América Latina) enfatizam o grupo, as obrigações relacionais e um self definido em relação aos outros." },
+    ]
+  },
+  person: {
+    flash: [
+      { q: "Quais são os 5 fatores do Big Five (OCEAN)?", a: "Openness (abertura à experiência), Conscientiousness (conscienciosidade), Extraversion (extroversão), Agreeableness (amabilidade), Neuroticism (neuroticismo). O modelo mais validado empiricamente de personalidade." },
+      { q: "O que é o Id, Ego e Superego em Freud?", a: "Id = pulsões instintivas, princípio do prazer. Ego = princípio da realidade, mediador. Superego = normas internalizadas, consciência moral. O conflito entre esses sistemas gera angústia e defesas." },
+      { q: "O que são mecanismos de defesa?", a: "Estratégias inconscientes do ego para lidar com angústia. Ex: repressão (excluir da consciência), projeção (atribuir ao outro), sublimação (redirecionar para algo socialmente aceitável)." },
+      { q: "O que propôs Carl Rogers sobre personalidade saudável?", a: "A tendência atualizante como força motivacional universal. Saúde psicológica = congruência entre self real e self ideal. Doença surge quando condições de valor distorcem o autoconceito." },
+      { q: "O que é autoeficácia (Bandura)?", a: "Crença na própria capacidade de executar comportamentos necessários para atingir objetivos específicos. Alta autoeficácia → maior esforço, persistência e resiliência diante de obstáculos." },
+      { q: "O que são os clusters de transtornos de personalidade no DSM-5?", a: "Cluster A: excêntrico/paranoide (paranoide, esquizoide, esquizotípico). Cluster B: dramático (borderline, narcisista, histriônico, antissocial). Cluster C: ansioso (evitativo, dependente, obsessivo-compulsivo)." },
+    ],
+    quiz: [
+      { q: "Segundo Rogers, a 'condição de valor' causa:", opts: ["Autoatualização plena","Distorção do self real para atender expectativas externas","Fortalecimento do Superego","Introversão psicológica"], correct: 1, exp: "Quando o amor dos cuidadores é condicional ('te amo SE...'), a criança aprende a distorcer seu self real para receber aprovação — base do sofrimento psicológico para Rogers." },
+      { q: "Qual teoria propõe que o comportamento varia conforme a situação, questionando a estabilidade dos traços?", opts: ["Teoria Psicodinâmica de Freud","Humanismo de Maslow","Proposta situacionista de Mischel","Modelo PEN de Eysenck"], correct: 2, exp: "Mischel (1968) provocou debate ao mostrar baixas correlações entre traços e comportamentos em diferentes situações. Desencadeou a discussão pessoa vs. situação." },
+      { q: "O inconsciente coletivo e os arquétipos são conceitos de:", opts: ["Sigmund Freud","Alfred Adler","Carl Gustav Jung","Erik Erikson"], correct: 2, exp: "Jung expandiu o inconsciente além do pessoal: o inconsciente coletivo contém imagens universais (arquétipos) herdadas da experiência humana ancestral." },
+      { q: "A herdabilidade do Big Five é aproximadamente:", opts: ["10–20%","40–60%","80–90%","0% — é puramente aprendido"], correct: 1, exp: "Estudos de gêmeos indicam herdabilidade de ~40–60% para os fatores do Big Five. A outra metade é explicada por ambiente não-compartilhado e erro de medida." },
+    ]
+  },
+  proc: {
+    flash: [
+      { q: "O que é o modelo de memória de trabalho de Baddeley?", a: "Executivo central (controle atencional) + alça fonológica (som/linguagem) + esboço visuoespacial (imagens) + buffer episódico (integração). Capacidade: ~4 chunks. Base do pensamento consciente." },
+      { q: "Qual é a diferença entre memória episódica e semântica?", a: "Episódica: eventos pessoais situados no tempo e espaço ('minha formatura'). Semântica: conhecimento geral sobre o mundo ('Paris é a capital da França'). Ambas são declarativas/explícitas." },
+      { q: "O que é o efeito Stroop?", a: "Conflito entre leitura automática (Sistema 1) e nomeação controlada de cor (Sistema 2). Nomear a cor de palavras como 'VERMELHO' escrito em azul leva mais tempo — demonstra dois sistemas de processamento." },
+      { q: "O que são os Sistemas 1 e 2 de Kahneman?", a: "Sistema 1: rápido, automático, intuitivo, pouco esforço — sujeito a vieses. Sistema 2: lento, deliberativo, esforçoso, mais acurado — mas preguiçoso. A maioria das decisões usa o Sistema 1." },
+      { q: "O que é reavaliação cognitiva como estratégia de regulação emocional?", a: "Reinterpretar um evento para mudar seu impacto emocional. Ex: ver uma crítica como oportunidade de crescimento. Mais eficaz e menos custosa do que supressão expressiva." },
+      { q: "O que é o estado de Flow (Csikszentmihalyi)?", a: "Estado de engajamento total, concentração intensa e perda da noção do tempo quando desafio ≈ habilidade. Associado a motivação intrínseca, criatividade e bem-estar." },
+    ],
+    quiz: [
+      { q: "A pesquisa de Elizabeth Loftus sobre memória demonstrou principalmente que:", opts: ["Memórias são gravações permanentes e precisas","Memórias podem ser distorcidas ou implantadas por sugestão verbal","Memórias só são afetadas por emoções intensas","Adultos têm memórias mais falsas que crianças"], correct: 1, exp: "Loftus demonstrou que detalhes falsos inseridos em perguntas (ex: 'a velocidade quando o carro QUEBROU' vs 'colidiu') alteram o conteúdo da memória — com enormes implicações jurídicas." },
+      { q: "Durante qual processo o hipocampo reativa e consolida memórias do dia?", opts: ["Vigília ativa","Exercício físico","Sono REM e NREM","Meditação focada"], correct: 2, exp: "Durante o sono, especialmente REM e ondas lentas (NREM), o hipocampo 'repete' memórias do dia e as transfere para o córtex para armazenamento de longo prazo." },
+      { q: "A hipótese de Sapir-Whorf (versão forte) afirma que:", opts: ["Linguagem reflete pensamento","Pensamento é impossível sem linguagem verbal","A linguagem determina completamente o que podemos pensar","Línguas têm estruturas gramaticais universais"], correct: 2, exp: "A versão forte (determinismo linguístico) afirma que a língua que falamos delimita completamente o que podemos pensar. Essa versão forte é amplamente rejeitada — mas a versão fraca tem suporte parcial." },
+      { q: "O modelo de processamento bottom-up na percepção significa:", opts: ["Expectativas guiam a percepção","Conhecimento prévio domina o processamento","O processamento parte dos dados sensoriais brutos","Atenção dirige completamente o que percebemos"], correct: 2, exp: "Bottom-up: processamento guiado pelos dados sensoriais de entrada, sem influência de expectativas. Oposto ao top-down (guiado pelo conhecimento prévio)." },
+    ]
+  }
+};
+
+// ─── NAVIGATION ───
+function navigate(disc) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + disc).classList.add('active');
+  document.querySelector('.nav-item[data-disc="' + disc + '"]').classList.add('active');
+
+  const titles = {
+    home: 'PSI·2 — Hub de Estudos',
+    ai: 'IA Aplicada',
+    neuro: 'Neurociência & Genética Comportamental',
+    social: 'Psicologia Social',
+    person: 'Personalidade Humana',
+    proc: 'Processos Psicológicos'
+  };
+  const colors = { ai: '#7c6af7', neuro: '#2dd4bf', social: '#f97316', person: '#e879a4', proc: '#84cc16' };
+  document.getElementById('topbar-title').textContent = titles[disc] || disc;
+  const badge = document.getElementById('topbar-badge');
+  if (disc !== 'home') {
+    badge.style.display = '';
+    badge.textContent = disc.toUpperCase();
+    badge.style.background = colors[disc] + '22';
+    badge.style.color = colors[disc];
+    badge.style.border = '1px solid ' + colors[disc] + '44';
+  } else {
+    badge.style.display = 'none';
+  }
+  closeSidebar();
+}
+
+// ─── TABS ───
+function switchTab(disc, tab) {
+  document.querySelectorAll('#page-' + disc + ' .tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('#page-' + disc + ' .tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(disc + '-' + tab).classList.add('active');
+  event.target.classList.add('active');
+
+  // Lazy-render
+  if (tab === 'flash') renderFlashcards(disc);
+  if (tab === 'quiz') renderQuiz(disc);
+}
+
+// ─── FLASHCARDS ───
+function renderFlashcards(disc) {
+  const container = document.getElementById(disc + '-flashcards');
+  if (container.childElementCount > 0) return;
+  DATA[disc].flash.forEach((fc, i) => {
+    container.innerHTML += `
+      <div class="flashcard" onclick="this.classList.toggle('flipped')">
+        <div class="flashcard-inner">
+          <div class="flashcard-front">
+            <div class="fc-label">Conceito</div>
+            <p>${fc.q}</p>
+            <div class="flashcard-hint">toque para revelar</div>
+          </div>
+          <div class="flashcard-back">
+            <p>${fc.a}</p>
+          </div>
+        </div>
+      </div>`;
+  });
+}
+
+// ─── QUIZ ───
+const quizState = {};
+function renderQuiz(disc) {
+  const container = document.getElementById(disc + '-quiz-container');
+  if (container.childElementCount > 0) return;
+  quizState[disc] = { answers: {}, total: DATA[disc].quiz.length };
+  let html = '';
+  DATA[disc].quiz.forEach((q, qi) => {
+    html += `<div class="quiz-question">
+      <div class="q-num">Questão ${qi+1} de ${DATA[disc].quiz.length}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="quiz-options">`;
+    q.opts.forEach((opt, oi) => {
+      html += `<button class="quiz-option" onclick="answerQuiz('${disc}',${qi},${oi})" id="q${disc}${qi}o${oi}">${opt}</button>`;
+    });
+    html += `</div>
+      <div class="quiz-explanation" id="exp${disc}${qi}">${q.exp}</div>
+    </div>`;
+  });
+  html += `<div class="quiz-score" id="score${disc}">
+    <div class="score-num" id="scorenum${disc}">0/${DATA[disc].quiz.length}</div>
+    <p>Resultado do quiz. Revise os conteúdos marcados em vermelho.</p>
+    <button class="btn-primary" onclick="resetQuiz('${disc}')">Reiniciar Quiz</button>
+  </div>`;
+  container.innerHTML = html;
+}
+
+function answerQuiz(disc, qi, oi) {
+  if (quizState[disc].answers[qi] !== undefined) return;
+  quizState[disc].answers[qi] = oi;
+  const q = DATA[disc].quiz[qi];
+  q.opts.forEach((_, i) => {
+    const btn = document.getElementById(`q${disc}${qi}o${i}`);
+    btn.classList.add('disabled');
+    if (i === q.correct) btn.classList.add('correct');
+    else if (i === oi) btn.classList.add('wrong');
+  });
+  document.getElementById(`exp${disc}${qi}`).classList.add('show');
+  if (Object.keys(quizState[disc].answers).length === quizState[disc].total) {
+    const correct = Object.entries(quizState[disc].answers).filter(([qi, oi]) => DATA[disc].quiz[qi].correct === oi).length;
+    document.getElementById(`scorenum${disc}`).textContent = `${correct}/${quizState[disc].total}`;
+    document.getElementById(`score${disc}`).classList.add('show');
+  }
+}
+
+function resetQuiz(disc) {
+  const container = document.getElementById(disc + '-quiz-container');
+  container.innerHTML = '';
+  quizState[disc] = null;
+  renderQuiz(disc);
+}
+
+// ─── SIDEBAR (mobile) ───
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('backdrop').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('backdrop').classList.remove('show');
+}
+
+// ─── PWA SETUP ───
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js');
+}
+</script>
+</body>
+</html>
