@@ -1,24 +1,14 @@
 {
-  "name": "PSI·2 Hub de Estudos",
-  "short_name": "PSI·2",
-  "description": "Hub de estudos para o 2º período de Psicologia",
+  "name": "PSI · Memória Acadêmica",
+  "short_name": "PSI·HUB",
+  "description": "Repositório vivo da graduação em Psicologia — UNINASSAU Patos",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0d1117",
-  "theme_color": "#1a1f2e",
+  "background_color": "#0a0d14",
+  "theme_color": "#0a0d14",
   "orientation": "any",
   "icons": [
-    {
-      "src": "./icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }
